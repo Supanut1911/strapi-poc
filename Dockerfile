@@ -1,18 +1,17 @@
-FROM node:16-alpine
-# Installing libvips-dev for sharp Compatibility
-RUN apk update && apk add --no-cache build-base gcc autoconf automake zlib-dev libpng-dev nasm bash vips-dev
-ARG NODE_ENV=development
-ENV NODE_ENV=${NODE_ENV}
+FROM node:18
 
-WORKDIR /opt/
-COPY package.json package-lock.json ./
-RUN npm config set network-timeout 600000 -g && npm install
-ENV PATH /opt/node_modules/.bin:$PATH
+WORKDIR /app
 
-WORKDIR /opt/app
+COPY ./package*.json ./
+
+RUN npm ci
+
 COPY . .
-RUN chown -R node:node /opt/app
-USER node
-RUN ["npm", "run", "build"]
+
+ENV NODE_ENV=production
+
+RUN npm run build
+
 EXPOSE 1337
-CMD ["npm", "run", "develop"]
+
+CMD [ "npm", "run", "start" ]
